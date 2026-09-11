@@ -16,7 +16,7 @@ Use HTTPS with a certificate trusted by each device for production installations
 1. Open Joplin settings and select **Mealie Shopping List Sync**.
 2. Enter the Mealie base URL and API token.
 3. Optionally change automatic sync or its interval (five minutes by default).
-4. Run **Tools → Connect Mealie Shopping List** and select a list.
+4. On desktop, run **Tools → Connect Mealie Shopping List** and select a list. On mobile, open any note in edit mode and tap the link button in the editor toolbar.
 
 The plugin creates the target note in the selected notebook, or reuses a unique existing note for that Mealie list. Use **Sync Mealie Shopping List Now**, the desktop note-toolbar button, or the **Sync with Mealie** button in the rendered note for an immediate sync. Checked items are hidden in the rendered note by default; use **Show checked (N)** to reveal or collapse them without changing the Markdown.
 
@@ -37,7 +37,7 @@ npm run dist
 
 ## Mobile notes
 
-Android supports manual `.jpl` installation. iOS only installs plugins approved for Joplin's recommended catalogue, so public iOS availability depends on that review.
+On Android or iOS, open any note in edit mode and tap the link button in the editor toolbar to connect a shopping list. The adjacent sync button triggers a manual sync while the connected note is open. Android also supports manual `.jpl` installation. iOS only installs plugins approved for Joplin's recommended catalogue, so public iOS availability depends on that review.
 
 ## License
 

@@ -60,6 +60,8 @@ class PluginController {
 		});
 		await joplin.views.menuItems.create('mealieConnectMenu', CONNECT_COMMAND, MenuItemLocation.Tools);
 		await joplin.views.menuItems.create('mealieSyncMenu', SYNC_COMMAND, MenuItemLocation.Tools);
+		await joplin.views.toolbarButtons.create('mealieConnectEditorToolbar', CONNECT_COMMAND, ToolbarButtonLocation.EditorToolbar);
+		await joplin.views.toolbarButtons.create('mealieSyncEditorToolbar', SYNC_COMMAND, ToolbarButtonLocation.EditorToolbar);
 		await joplin.views.toolbarButtons.create('mealieSyncToolbar', SYNC_COMMAND, ToolbarButtonLocation.NoteToolbar);
 	}
 
