@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"outDir": "./dist/",
+		"module": "commonjs",
+		"target": "es2015",
+		"jsx": "react",
+		"allowJs": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"moduleResolution": "node",
+		"skipLibCheck": true,
+		"baseUrl": "."
+	},
+	"exclude": ["node_modules", "dist", "publish"]
+}

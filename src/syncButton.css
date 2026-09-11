@@ -1,0 +1,7 @@
+.mealie-sync-control { display: flex; align-items: center; gap: 0.5em; margin: 0.75em 0; }
+.mealie-sync-button, .mealie-checked-toggle { appearance: none; background: transparent; border: 1px solid currentColor; border-radius: 4px; color: var(--joplin-color); cursor: pointer; display: inline-block; font: inherit; line-height: 1.4; padding: 0.4em 0.8em; }
+.mealie-sync-button:disabled { cursor: wait; opacity: 0.65; }
+.mealie-sync-button:focus-visible, .mealie-checked-toggle:focus-visible { outline: 2px solid var(--joplin-color2); outline-offset: 2px; }
+.mealie-sync-status { font-size: 0.9em; }
+.mealie-sync-checked-item { display: none; }
+.mealie-sync-show-checked .mealie-sync-checked-item { display: list-item; }
