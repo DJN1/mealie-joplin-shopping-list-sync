@@ -18,7 +18,9 @@ Use HTTPS with a certificate trusted by each device for production installations
 3. Optionally change automatic sync or its interval (five minutes by default).
 4. On desktop, run **Tools → Connect Mealie Shopping List** and select a list. On mobile, open any note in edit mode and tap the link button in the editor toolbar.
 
-The plugin creates the target note in the selected notebook, or reuses a unique existing note for that Mealie list. Use **Sync Mealie Shopping List Now**, the desktop note-toolbar button, or the **Sync with Mealie** button in the rendered note for an immediate sync. Checked items are hidden in the rendered note by default; use **Show checked (N)** to reveal or collapse them without changing the Markdown.
+The plugin creates the target note in the selected notebook, or reuses a unique existing note for that Mealie list. Use **Sync Mealie Shopping List Now**, a toolbar button, or the **Sync with Mealie** button in the rendered note for an immediate sync. Checkboxes in the rendered note update Mealie directly. Checked items are hidden by default; use **Show checked (N)** to reveal or collapse them.
+
+The managed list is stored in a fenced Markdown block that Joplin preserves when a note is opened in the Rich Text editor. Version 1.0.2 automatically migrates intact older notes and can repair a dedicated Mealie note damaged by Rich Text conversion by refreshing it from Mealie.
 
 Only checkboxes on generated, identified rows are written back to Mealie. Text edits, additions, deletion, movement, and regrouping inside the managed block are restored from Mealie. Content outside the managed block is preserved.
 

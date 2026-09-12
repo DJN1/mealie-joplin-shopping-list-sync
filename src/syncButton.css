@@ -3,5 +3,6 @@
 .mealie-sync-button:disabled { cursor: wait; opacity: 0.65; }
 .mealie-sync-button:focus-visible, .mealie-checked-toggle:focus-visible { outline: 2px solid var(--joplin-color2); outline-offset: 2px; }
 .mealie-sync-status { font-size: 0.9em; }
-.mealie-sync-checked-item { display: none; }
-.mealie-sync-show-checked .mealie-sync-checked-item { display: list-item; }
+.mealie-shopping-list .mealie-items { list-style: none; padding-left: 0; }
+.mealie-shopping-list .mealie-sync-checked-item { display: none; }
+.mealie-shopping-list.mealie-sync-show-checked .mealie-sync-checked-item { display: list-item; }

@@ -24,9 +24,14 @@ class PluginController {
 		await registerSettings();
 		await this.registerCommands();
 		await joplin.contentScripts.register(ContentScriptType.MarkdownItPlugin, CONTENT_SCRIPT_ID, './contentScript.js');
-		await joplin.contentScripts.onMessage(CONTENT_SCRIPT_ID, async (message: { type?: string }) => {
-			if (message?.type !== 'syncNow') return { ok: false, message: 'Unknown action.' };
-			try { return { ok: true, ...(await this.manualSync()) }; }
+		await joplin.contentScripts.onMessage(CONTENT_SCRIPT_ID, async (message: { type?: string; itemId?: string; checked?: boolean }) => {
+			try {
+				if (message?.type === 'syncNow') return { ok: true, ...(await this.manualSync()) };
+				if (message?.type === 'toggleItem' && typeof message.itemId === 'string' && typeof message.checked === 'boolean') {
+					return { ok: true, ...(await this.toggleItem(message.itemId, message.checked)) };
+				}
+				return { ok: false, message: 'Unknown action.' };
+			}
 			catch (error) { return { ok: false, message: errorMessage(error) }; }
 		});
 		await joplin.workspace.onNoteChange(event => { void this.onNoteChange(event.id); });
@@ -71,6 +76,20 @@ class PluginController {
 		const selected = await joplin.workspace.selectedNote();
 		if (!selected || selected.id !== settings.noteId) throw new SyncError('configuration', 'Open the connected Mealie shopping-list note before syncing.');
 		return this.flight.run();
+	}
+
+	private async toggleItem(itemId: string, checked: boolean): Promise<SyncResult> {
+		const settings = await readSettings();
+		if (!settings.noteId || !settings.listId) throw new SyncError('configuration', 'Connect a Mealie shopping list first.');
+		const selected = await joplin.workspace.selectedNote();
+		if (!selected || selected.id !== settings.noteId) throw new SyncError('configuration', 'Open the connected Mealie shopping-list note before updating it.');
+		const client = new MealieClient(settings.baseUrl, settings.apiToken);
+		const list = await client.getList(settings.listId);
+		const item = list.listItems.find(candidate => candidate.id === itemId);
+		if (!item) throw new SyncError('not-found', 'The Mealie shopping-list item no longer exists.');
+		if (item.checked !== checked) await client.updateItems([{ ...item, checked }]);
+		await this.flight.run();
+		return { changed: item.checked !== checked, message: item.checked === checked ? 'Already up to date.' : 'Item updated.' };
 	}
 
 	private async syncOnce(): Promise<SyncResult> {

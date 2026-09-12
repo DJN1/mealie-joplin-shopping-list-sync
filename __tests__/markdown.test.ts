@@ -1,4 +1,4 @@
-import { checkboxUpdates, createNoteBody, displayItem, parseManagedBlock, renderManagedBlock, replaceManagedBlock } from '../src/markdown';
+import { checkboxUpdates, createNoteBody, displayItem, managedDocument, parseManagedBlock, renderManagedBlock, replaceManagedBlock } from '../src/markdown';
 import { ShoppingList } from '../src/types';
 
 const list: ShoppingList = {
@@ -19,7 +19,7 @@ describe('managed Markdown', () => {
 			'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa': false,
 			'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb': true,
 		});
-		expect(body.indexOf('## Dairy')).toBeLessThan(body.indexOf('## Other'));
+		expect(body).toContain('```mealie-shopping-list');
 		expect(replaceManagedBlock(body, list)).toBe(body);
 	});
 
@@ -29,7 +29,10 @@ describe('managed Markdown', () => {
 	});
 
 	test('detects only local checkbox changes', () => {
-		const body = createNoteBody(list).replace('- [ ] Milk', '- [x] Milk').replace('- [x] Bread', '- [ ] Bread');
+		const document = managedDocument(list);
+		document.items[0].checked = true;
+		document.items[1].checked = false;
+		const body = `\`\`\`mealie-shopping-list\n${JSON.stringify(document)}\n\`\`\`\n`;
 		const updates = checkboxUpdates(parseManagedBlock(body), list);
 		expect(updates.map(item => [item.id, item.checked])).toEqual([
 			['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', true],
@@ -38,7 +41,9 @@ describe('managed Markdown', () => {
 	});
 
 	test('ignores deleted and unknown rows', () => {
-		const body = createNoteBody(list).replace(/^- \[ \] Milk .*aaaaaaaa.*\n/m, '') + '- [x] Unknown\n';
+		const document = managedDocument(list);
+		document.items = [{ ...document.items[0], id: 'unknown', checked: true }];
+		const body = `\`\`\`mealie-shopping-list\n${JSON.stringify(document)}\n\`\`\`\n`;
 		expect(checkboxUpdates(parseManagedBlock(body), list)).toEqual([]);
 	});
 
@@ -49,7 +54,13 @@ describe('managed Markdown', () => {
 	});
 
 	test('escapes remote Markdown and creates deterministic fallback displays', () => {
-		expect(displayItem({ id: 'x', checked: false, display: '# [Milk]\n<!-- bad -->' })).toBe('\\# \\[Milk\\] \\<!-- bad --\\>');
+		expect(displayItem({ id: 'x', checked: false, display: '# [Milk]\n<!-- bad -->' })).toBe('# [Milk] <!-- bad -->');
 		expect(displayItem({ id: 'x', checked: false, quantity: 2, unit: { name: 'kg' }, food: { name: 'Flour' }, note: 'Flour' })).toBe('2 kg Flour');
+	});
+
+	test('parses legacy blocks so they can be migrated on sync', () => {
+		const legacy = '<!-- mealie-sync:start:v1 list-id=11111111-1111-4111-8111-111111111111 -->\n<!-- mealie-sync:state:v1 {"items":{"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa":false}} -->\n- [x] Milk <!-- mealie-sync:item:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa -->\n<!-- mealie-sync:end:v1 -->';
+		expect(parseManagedBlock(legacy).checkboxes['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa']).toBe(true);
+		expect(replaceManagedBlock(legacy, list)).toContain('```mealie-shopping-list');
 	});
 });

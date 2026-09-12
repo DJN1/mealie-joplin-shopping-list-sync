@@ -1,6 +1,8 @@
 import joplin from 'api';
+import { ModelType } from 'api/types';
 import { MealieClient } from './mealie';
 import { createNoteBody, listMarker, parseManagedBlock } from './markdown';
+import { NOTE_STATE_KEY, NoteSyncState } from './joplinStore';
 import { saveConnection } from './settings';
 import { JoplinNote, ShoppingListSummary } from './types';
 import { SyncError } from './errors';
@@ -23,8 +25,11 @@ async function findExistingNotes(listId: string): Promise<JoplinNote[]> {
 	const found: JoplinNote[] = [];
 	let page = 1;
 	for (;;) {
-		const response = await joplin.data.get(['search'], { query: 'mealie-sync', type: 'note', fields: ['id', 'title', 'body', 'parent_id'], page, limit: 100 });
-		for (const note of response.items || []) if (String(note.body || '').includes(listMarker(listId))) found.push(note as JoplinNote);
+		const response = await joplin.data.get(['search'], { query: 'Mealie', type: 'note', fields: ['id', 'title', 'body', 'parent_id'], page, limit: 100 });
+		for (const note of response.items || []) {
+			const body = String(note.body || '');
+			if (body.includes(listMarker(listId)) || body.includes(`mealie-sync:start:v1 list-id=${listId}`)) found.push(note as JoplinNote);
+		}
 		if (!response.has_more) break;
 		page += 1;
 	}
@@ -45,6 +50,8 @@ export async function connect(client: MealieClient): Promise<JoplinNote | null> 
 		const folder = await joplin.workspace.selectedFolder();
 		note = await joplin.data.post(['notes'], null, { parent_id: folder?.id, title: `Mealie – ${list.name}`, body: createNoteBody(list) }) as JoplinNote;
 	}
+	const state: NoteSyncState = { version: 2, listId, items: Object.fromEntries(list.listItems.map(item => [item.id, item.checked])) };
+	await joplin.data.userDataSet(ModelType.Note, note.id, NOTE_STATE_KEY, state);
 	await saveConnection(listId, note.id);
 	return note;
 }
