@@ -30,3 +30,11 @@ test('leaves unrelated fences alone', () => {
 	const renderFence = markdownIt.renderer.rules.fence as (...args: any[]) => string;
 	expect(renderFence([{ info: 'javascript', content: 'x' }], 0, {}, {}, {})).toBe('fallback');
 });
+
+test('falls back safely for a malformed managed item', () => {
+	const fallback = jest.fn(() => 'fallback');
+	const markdownIt = { renderer: { rules: { fence: fallback } } };
+	contentScript.default({ contentScriptId: 'mealieSyncButton' }).plugin(markdownIt);
+	const renderFence = markdownIt.renderer.rules.fence as (...args: any[]) => string;
+	expect(renderFence([{ info: 'mealie-shopping-list', content: JSON.stringify({ version: 2, items: [{ id: 'x', checked: false }] }) }], 0, {}, {}, {})).toBe('fallback');
+});

@@ -44,7 +44,10 @@ function parseDocument(value: unknown): ManagedDocument {
 		throw new SyncError('validation', 'The Mealie shopping-list block is malformed.');
 	}
 	for (const item of document.items) {
-		if (!item || typeof item.id !== 'string' || typeof item.checked !== 'boolean' || typeof item.baseline !== 'boolean') {
+		if (!item || typeof item.id !== 'string' || typeof item.checked !== 'boolean' || typeof item.baseline !== 'boolean'
+			|| typeof item.display !== 'string' || typeof item.group !== 'string'
+			|| typeof item.groupPosition !== 'number' || !Number.isFinite(item.groupPosition)
+			|| typeof item.position !== 'number' || !Number.isFinite(item.position)) {
 			throw new SyncError('validation', 'The Mealie shopping-list block contains an invalid item.');
 		}
 	}

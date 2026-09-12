@@ -11,6 +11,15 @@ export interface NoteSyncState {
 	items: Record<string, boolean>;
 }
 
+export async function readNoteSyncState(id: string): Promise<NoteSyncState | null> {
+	try { return await joplin.data.userDataGet<NoteSyncState>(ModelType.Note, id, NOTE_STATE_KEY); }
+	catch (error) {
+		const message = String(error).toLowerCase();
+		if (message.includes('404') || message.includes('not found') || message.includes('no user data')) return null;
+		throw error;
+	}
+}
+
 export class JoplinNoteStore implements NoteStore {
 	public lastWrittenHash = '';
 
@@ -28,9 +37,17 @@ export class JoplinNoteStore implements NoteStore {
 		await joplin.data.put(['notes', id], null, changes);
 	}
 
+	public async createBackup(note: JoplinNote): Promise<JoplinNote> {
+		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		return await joplin.data.post(['notes'], null, {
+			parent_id: note.parent_id,
+			title: `${note.title} – backup ${timestamp}`,
+			body: note.body,
+		}) as JoplinNote;
+	}
+
 	public async getSyncState(id: string): Promise<NoteSyncState | null> {
-		try { return await joplin.data.userDataGet<NoteSyncState>(ModelType.Note, id, NOTE_STATE_KEY); }
-		catch { return null; }
+		return readNoteSyncState(id);
 	}
 
 	public async setSyncState(id: string, state: NoteSyncState): Promise<void> {

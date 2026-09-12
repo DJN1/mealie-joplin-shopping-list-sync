@@ -20,7 +20,7 @@ Use HTTPS with a certificate trusted by each device for production installations
 
 The plugin creates the target note in the selected notebook, or reuses a unique existing note for that Mealie list. Use **Sync Mealie Shopping List Now**, a toolbar button, or the **Sync with Mealie** button in the rendered note for an immediate sync. Checkboxes in the rendered note update Mealie directly. Checked items are hidden by default; use **Show checked (N)** to reveal or collapse them.
 
-The managed list is stored in a fenced Markdown block that Joplin preserves when a note is opened in the Rich Text editor. Version 1.0.2 automatically migrates intact older notes and can repair a dedicated Mealie note damaged by Rich Text conversion by refreshing it from Mealie.
+The managed list is stored in a fenced Markdown block that Joplin preserves when a note is opened in the Rich Text editor. Intact older notes migrate automatically. If an older note was damaged by Rich Text conversion, open it and run **Repair Mealie Shopping List**. Repair requires confirmation, creates a backup note in the same notebook, and then restores the shopping list from Mealie. Background sync never performs a destructive repair.
 
 Only checkboxes on generated, identified rows are written back to Mealie. Text edits, additions, deletion, movement, and regrouping inside the managed block are restored from Mealie. Content outside the managed block is preserved.
 

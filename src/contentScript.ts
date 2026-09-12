@@ -11,6 +11,15 @@ interface RenderedItem {
 	position: number;
 }
 
+function isRenderedItem(item: unknown): item is RenderedItem {
+	if (!item || typeof item !== 'object') return false;
+	const value = item as Partial<RenderedItem>;
+	return typeof value.id === 'string' && typeof value.checked === 'boolean'
+		&& typeof value.display === 'string' && typeof value.group === 'string'
+		&& typeof value.groupPosition === 'number' && Number.isFinite(value.groupPosition)
+		&& typeof value.position === 'number' && Number.isFinite(value.position);
+}
+
 module.exports = {
 	default: function(context: { contentScriptId: string }) {
 		return {
@@ -21,7 +30,7 @@ module.exports = {
 					if (String(token.info || '').trim() !== 'mealie-shopping-list') return fallback(tokens, index, options, env, self);
 					let document: { version?: number; items?: RenderedItem[] };
 					try { document = JSON.parse(String(token.content || '')); } catch { return fallback(tokens, index, options, env, self); }
-					if (document.version !== 2 || !Array.isArray(document.items)) return fallback(tokens, index, options, env, self);
+					if (document.version !== 2 || !Array.isArray(document.items) || !document.items.every(isRenderedItem)) return fallback(tokens, index, options, env, self);
 
 					const groups = new Map<string, { position: number; items: RenderedItem[] }>();
 					for (const item of document.items) {

@@ -2,7 +2,7 @@ import joplin from 'api';
 import { ModelType } from 'api/types';
 import { MealieClient } from './mealie';
 import { createNoteBody, listMarker, parseManagedBlock } from './markdown';
-import { NOTE_STATE_KEY, NoteSyncState } from './joplinStore';
+import { NOTE_STATE_KEY, NoteSyncState, readNoteSyncState } from './joplinStore';
 import { saveConnection } from './settings';
 import { JoplinNote, ShoppingListSummary } from './types';
 import { SyncError } from './errors';
@@ -28,7 +28,9 @@ async function findExistingNotes(listId: string): Promise<JoplinNote[]> {
 		const response = await joplin.data.get(['search'], { query: 'Mealie', type: 'note', fields: ['id', 'title', 'body', 'parent_id'], page, limit: 100 });
 		for (const note of response.items || []) {
 			const body = String(note.body || '');
-			if (body.includes(listMarker(listId)) || body.includes(`mealie-sync:start:v1 list-id=${listId}`)) found.push(note as JoplinNote);
+			const bodyMatches = body.includes(listMarker(listId)) || body.includes(`mealie-sync:start:v1 list-id=${listId}`);
+			const state = bodyMatches ? null : await readNoteSyncState(String(note.id));
+			if (bodyMatches || state?.listId === listId) found.push(note as JoplinNote);
 		}
 		if (!response.has_more) break;
 		page += 1;
@@ -45,7 +47,11 @@ export async function connect(client: MealieClient): Promise<JoplinNote | null> 
 	let note: JoplinNote;
 	if (matches.length === 1) {
 		note = matches[0];
-		parseManagedBlock(note.body);
+		try { parseManagedBlock(note.body); }
+		catch (error) {
+			const state = await readNoteSyncState(note.id);
+			if (state?.listId !== listId) throw error;
+		}
 	} else {
 		const folder = await joplin.workspace.selectedFolder();
 		note = await joplin.data.post(['notes'], null, { parent_id: folder?.id, title: `Mealie – ${list.name}`, body: createNoteBody(list) }) as JoplinNote;
